@@ -1,7 +1,7 @@
 package ip
 
 import (
-	config "git.zjuqsc.com/3200100963/ipmanager/Config"
+	config "ipmanager/Config"
 	"time"
 )
 

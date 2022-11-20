@@ -2,9 +2,9 @@ package ip
 
 import (
 	"fmt"
-	config "git.zjuqsc.com/3200100963/ipmanager/Config"
 	"golang.org/x/exp/slices"
 	"io"
+	config "ipmanager/Config"
 	"os"
 	"time"
 )

@@ -3,9 +3,9 @@ package web
 import (
 	"encoding/json"
 	"fmt"
-	config "git.zjuqsc.com/3200100963/ipmanager/Config"
-	IP "git.zjuqsc.com/3200100963/ipmanager/ip"
 	"golang.org/x/exp/rand"
+	config "ipmanager/Config"
+	IP "ipmanager/ip"
 	"net"
 	"net/http"
 	"time"

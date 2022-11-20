@@ -1,10 +1,10 @@
 package main
 
 import (
-	config "git.zjuqsc.com/3200100963/ipmanager/Config"
-	web "git.zjuqsc.com/3200100963/ipmanager/Web"
-	"git.zjuqsc.com/3200100963/ipmanager/cmd"
-	IP "git.zjuqsc.com/3200100963/ipmanager/ip"
+	config "ipmanager/Config"
+	web "ipmanager/Web"
+	"ipmanager/cmd"
+	IP "ipmanager/ip"
 	"time"
 )
 

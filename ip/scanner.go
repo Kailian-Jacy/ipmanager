@@ -4,7 +4,7 @@ import "C"
 import (
 	"bufio"
 	"fmt"
-	config "git.zjuqsc.com/3200100963/ipmanager/Config"
+	config "ipmanager/Config"
 	"log"
 	"os"
 	"regexp"

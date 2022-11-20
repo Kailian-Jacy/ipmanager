@@ -4,12 +4,13 @@ WORKDIR /go/src/app
 COPY . .
 
 ENV GO111MODULE=on \
-    CGO_ENABLED=0 \
     GOPROXY=https://goproxy.io,direct \
     GOOS=linux \
     GOARCH=amd64
 
-RUN go build -o /go/bin/app/ipmannager
+RUN go mod init ipmanager \
+    && go mod tidy \
+    && go build -o /go/bin/app/ipmannager
 
 FROM alpine:latest
 ARG CONFIG

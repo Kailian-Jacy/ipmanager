@@ -3,8 +3,8 @@ package web
 import (
 	"bufio"
 	"fmt"
-	config "git.zjuqsc.com/3200100963/ipmanager/Config"
 	"io"
+	config "ipmanager/Config"
 	"net"
 	"time"
 )

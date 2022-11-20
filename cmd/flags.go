@@ -3,7 +3,7 @@ package cmd
 import (
 	"flag"
 	"fmt"
-	config "git.zjuqsc.com/3200100963/ipmanager/Config"
+	config "ipmanager/Config"
 )
 
 func IsFlagPassed(name string) bool {
