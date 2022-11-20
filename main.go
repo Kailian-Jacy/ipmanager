@@ -1,0 +1,30 @@
+package main
+
+import (
+	config "git.zjuqsc.com/3200100963/ipmanager/Config"
+	web "git.zjuqsc.com/3200100963/ipmanager/Web"
+	"git.zjuqsc.com/3200100963/ipmanager/cmd"
+	IP "git.zjuqsc.com/3200100963/ipmanager/ip"
+	"time"
+)
+
+func main() {
+	// Add Command line flag.
+	cmd.GetFlags()
+
+	// Fetch config and start serving.
+	IP.Init()
+
+	// Serve for proxy and probe.
+	web.Init()
+	go web.ListenAndServe(config.C.ProbePort)
+	web.ProxyServeAt(config.C.ProxyPort)
+
+	go func() {
+		for {
+			//  keep looping to update IP availability.
+			time.Sleep(time.Duration(config.C.ScanInterval) * time.Minute)
+			IP.Watch()
+		}
+	}()
+}
