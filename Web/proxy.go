@@ -20,12 +20,7 @@ var TimeOut = "HTTP/1.1 504 Gateway Timeout\nProxy connection timeout.\n"
 // Proxy receive the connection and proxy to target.
 func Proxy(src net.Conn) {
 	var d string
-	if config.C.Debug {
-		// TODO: Configurable load balancing: Marking upstream and set upstream by hand.
-		d = "127.0.0.1:19106"
-	} else {
-		d = LoadBalance()
-	}
+	d = LoadBalance()
 
 	dst, err := net.DialTimeout("tcp", d, time.Duration(config.C.DialTimeOut)*time.Second)
 
