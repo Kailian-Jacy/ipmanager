@@ -8,6 +8,7 @@ import (
 	IP "ipmanager/ip"
 	"net"
 	"net/http"
+	_ "net/http/pprof"
 	"time"
 )
 
@@ -33,7 +34,9 @@ func ProxyServeAt(port string) {
 		if config.C.Debug {
 			fmt.Println("Receiving proxy.")
 		}
-		go Proxy(conn)
+		go func() {
+			Proxy(tp, &conn, LoadBalance())
+		}()
 	}
 }
 

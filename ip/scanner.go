@@ -55,6 +55,10 @@ func (l *Log) Tail(path string, mode string) []*Entry {
 			if e, valid := BuildEntry(scanner.Text()); valid {
 				entries = append(entries, e)
 			}
+			if len(entries) > config.C.MaxHistoryLogEachIP {
+				// In case loading history caused OOM.
+				entries = entries[config.C.MaxHistoryLogEachIP/2:]
+			}
 			continue
 		}
 		// Record the very last place and return.
