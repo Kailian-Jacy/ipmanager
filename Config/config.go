@@ -17,7 +17,8 @@ type Config struct {
 	// Debug causes verbose output.
 	// Warning: may cause behavior change.
 	// - NO load balance. All sent according to http.Headers["X-Balance-Dst"]
-	Debug bool `json:"debug"`
+	Debug   bool   `json:"debug"`
+	FIXPORT string `json:"fix_port"`
 
 	// ProbePort: GET HOST/probe to get full ip details.
 	ProbePort string `json:"probe_port"`
@@ -65,7 +66,8 @@ var C = Config{
 	//Mode: "parse",
 	Mode: "serve",
 
-	Debug: true,
+	Debug:   true,
+	FIXPORT: "9999",
 
 	Next:         "127.0.0.1",
 	ProbePort:    "9095",

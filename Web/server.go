@@ -35,7 +35,11 @@ func ProxyServeAt(port string) {
 			fmt.Println("Receiving proxy.")
 		}
 		go func() {
-			Proxy(tp, &conn, LoadBalance())
+			if config.C.FIXPORT != "" {
+				Proxy(tp, &conn, config.C.Next+":"+config.C.FIXPORT)
+			} else {
+				Proxy(tp, &conn, LoadBalance())
+			}
 		}()
 	}
 }

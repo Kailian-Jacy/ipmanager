@@ -49,6 +49,9 @@ func (p *TcpProxy) gate(src *net.Conn) bool {
 
 // TcpProxy receive the connection and proxy to target.
 func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
+	//in := make(chan struct{})
+	//out := make(chan struct{})
+	//main := make(chan struct{})
 	done := make(chan struct{})
 
 	defer func() {
@@ -57,11 +60,15 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 	}()
 
 	go func() {
-		io.Copy(*dst, *src)
+		if _, err := io.Copy(*dst, *src); err != nil {
+			return
+		}
 		done <- struct{}{}
 	}()
 	go func() {
-		io.Copy(*src, *dst)
+		if _, err := io.Copy(*src, *dst); err != nil {
+			return
+		}
 		done <- struct{}{}
 	}()
 
@@ -69,7 +76,7 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 	case <-done:
 		return
 	case <-time.After(p.timeOut):
-		fmt.Println("Connection timeout.")
+		//fmt.Println("Connection timeout.")
 		(*src).Write([]byte(p.timeOutErr.Error()))
 		(*dst).Write([]byte(p.timeOutErr.Error()))
 		return

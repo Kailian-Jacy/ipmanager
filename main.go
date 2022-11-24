@@ -5,7 +5,7 @@ import (
 	web "ipmanager/Web"
 	"ipmanager/cmd"
 	IP "ipmanager/ip"
-	//_ "runtime/pprof"
+	_ "runtime/pprof"
 	"time"
 )
 
