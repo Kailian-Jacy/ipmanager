@@ -8,7 +8,6 @@ import (
 	config "ipmanager/Config"
 	"net/http"
 	"os"
-	"sync"
 	"time"
 )
 
@@ -17,7 +16,8 @@ var IPAvailable = make([]string, 0)
 
 // Translate port into IP.
 var port2IP = make(map[string]string, 0)
-var watcher = sync.Mutex{}
+
+//var watcher = sync.Mutex{}
 
 type IP struct {
 	Port   string
@@ -33,8 +33,6 @@ type IP struct {
 
 func Init() {
 	re2.Longest()
-	// Fetch config from config file.
-	// TODO
 
 	// Fetch all reserved IP.
 	Construct(AllIP())
@@ -84,11 +82,11 @@ func AllIP() [][]string {
 
 // Watch and update IP availability and history.
 func Watch() {
-	if !watcher.TryLock() {
-		return
-	}
-	watcher.Lock()
-	defer watcher.Unlock()
+	//if !watcher.TryLock() {
+	//	return
+	//}
+	//watcher.Lock()
+	//defer watcher.Unlock()
 	// Scan access log to compose success history.
 	ae := AccessLog.Tail(config.C.AccessLogPath, config.C.Mode)
 	for _, e := range ae {

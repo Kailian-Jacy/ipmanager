@@ -39,6 +39,7 @@ func (l *Log) Tail(path string, mode string) []*Entry {
 	if l.Count == 0 {
 		// Normal Mode: Newly opened file. Record the tail and return.
 		if mode != "parse" {
+			fmt.Println("Parsing access log...")
 			l.Count, err = l.F.Seek(0, 2)
 			return nil
 		}
