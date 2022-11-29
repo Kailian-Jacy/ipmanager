@@ -94,14 +94,14 @@ func Watch() {
 	}
 
 	// Limit failure IP.
-	for idx, ip := range IPAvailable {
-		if !IPAll[ip].IsHealth() {
+	for idx := len(IPAvailable) - 1; idx >= 0; idx-- {
+		if !IPAll[IPAvailable[idx]].IsHealth() {
 			cooldown := []time.Time{
 				time.Now(),
-				time.Now().Add(IPAll[ip].CoolDownDuration()),
+				time.Now().Add(IPAll[IPAvailable[idx]].CoolDownDuration()),
 			}
-			IPAll[ip].Banned = true
-			IPAll[ip].CoolDowns = append(IPAll[ip].CoolDowns, cooldown)
+			IPAll[IPAvailable[idx]].Banned = true
+			IPAll[IPAvailable[idx]].CoolDowns = append(IPAll[IPAvailable[idx]].CoolDowns, cooldown)
 			IPAvailable = slices.Delete(IPAvailable, idx, idx+1)
 		}
 	}
