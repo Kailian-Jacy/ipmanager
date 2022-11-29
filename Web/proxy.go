@@ -49,9 +49,6 @@ func (p *TcpProxy) gate(src *net.Conn) bool {
 
 // TcpProxy receive the connection and proxy to target.
 func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
-	//in := make(chan struct{})
-	//out := make(chan struct{})
-	//main := make(chan struct{})
 	done := make(chan struct{})
 
 	defer func() {

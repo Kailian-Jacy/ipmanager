@@ -1,11 +1,14 @@
 package ip
 
 import (
+	"encoding/json"
 	"fmt"
 	"golang.org/x/exp/slices"
 	"io"
 	config "ipmanager/Config"
+	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -14,6 +17,7 @@ var IPAvailable = make([]string, 0)
 
 // Translate port into IP.
 var port2IP = make(map[string]string, 0)
+var watcher = sync.Mutex{}
 
 type IP struct {
 	Port   string
@@ -80,6 +84,11 @@ func AllIP() [][]string {
 
 // Watch and update IP availability and history.
 func Watch() {
+	if !watcher.TryLock() {
+		return
+	}
+	watcher.Lock()
+	defer watcher.Unlock()
 	// Scan access log to compose success history.
 	ae := AccessLog.Tail(config.C.AccessLogPath, config.C.Mode)
 	for _, e := range ae {
@@ -120,4 +129,24 @@ func Probe() map[string]IP {
 		ips[ip] = *ipn
 	}
 	return ips
+}
+
+func RenewHandler(w http.ResponseWriter, r *http.Request) {
+	Watch()
+	w.Write([]byte("Renewed"))
+}
+
+func HistoryHandler(w http.ResponseWriter, r *http.Request) {
+	if config.C.Debug {
+		fmt.Println("Receiving probe: " + r.RequestURI + " From " + r.RemoteAddr)
+	}
+	Message := struct {
+		AvailableIP []string
+		IPHistory   map[string]IP
+	}{
+		AvailableIP: IPAvailable,
+		IPHistory:   Probe(),
+	}
+	b, _ := json.Marshal(Message)
+	w.Write(b)
 }

@@ -19,7 +19,6 @@ func main() {
 	// Serve for proxy and probe.
 	web.Init()
 	go web.ListenAndServe(config.C.ProbePort)
-	web.ProxyServeAt(config.C.ProxyPort)
 
 	go func() {
 		for {
@@ -28,4 +27,6 @@ func main() {
 			IP.Watch()
 		}
 	}()
+
+	web.ProxyServeAt(config.C.ProxyPort)
 }

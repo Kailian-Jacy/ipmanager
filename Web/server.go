@@ -1,7 +1,6 @@
 package web
 
 import (
-	"encoding/json"
 	"fmt"
 	"golang.org/x/exp/rand"
 	config "ipmanager/Config"
@@ -13,8 +12,9 @@ import (
 )
 
 func Init() {
-	http.HandleFunc("/probe", ProbeHandler)
 	http.HandleFunc("/config", config.ProbeHandler)
+	http.HandleFunc("/ip/renew", IP.RenewHandler)
+	http.HandleFunc("/ip/history", IP.HistoryHandler)
 }
 
 func ProxyServeAt(port string) {
@@ -42,21 +42,6 @@ func ProxyServeAt(port string) {
 			}
 		}()
 	}
-}
-
-func ProbeHandler(w http.ResponseWriter, r *http.Request) {
-	if config.C.Debug {
-		fmt.Println("Receiving probe: " + r.RequestURI + " From " + r.RemoteAddr)
-	}
-	Message := struct {
-		AvailableIP []string
-		IPHistory   map[string]IP.IP
-	}{
-		AvailableIP: IP.IPAvailable,
-		IPHistory:   IP.Probe(),
-	}
-	b, _ := json.Marshal(Message)
-	w.Write(b)
 }
 
 func ListenAndServe(port string) {
