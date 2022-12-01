@@ -66,7 +66,6 @@ func (l *Log) Tail(path string, mode string) []*Entry {
 		l.Count, _ = l.F.Seek(0, 2)
 		break
 	}
-
 	return entries
 }
 
@@ -95,6 +94,7 @@ var timeReA = regexp.MustCompile(`[0-9]*/[a-zA-Z]{3,4}/20[0-9]{2}:[0-9:]+:[0-9]+
 var statusCodeReA = regexp.MustCompile(` [0-9]{3} `)
 var exgressKeyReA = regexp.MustCompile(`Exgress_key: [0-9a-zA-Z]+`)
 var portReA = regexp.MustCompile(`127.0.0.1:[0-9]{5}`)
+var portReB = regexp.MustCompile(`[0-9]{5}`)
 
 func BuildEntry(line string) (*Entry, bool) {
 	var l Entry
@@ -109,7 +109,7 @@ func BuildEntry(line string) (*Entry, bool) {
 	if l.Port == "" {
 		return nil, false
 	}
-	l.Port = strings.Trim(regexp.MustCompile(`[0-9]{5}`).FindString(l.Port), " ")
+	l.Port = strings.Trim(portReB.FindString(l.Port), " ")
 	return &l, true
 }
 

@@ -77,8 +77,8 @@ var C = Config{
 	AccessLogPath:    "/Users/kailianjacy/go/ipmanager/Config/host.access.log",
 	UpstreamConfPath: "/Users/kailianjacy/go/ipmanager/Config/upstream.conf",
 
-	MaxHistoryLogEachIP:  1000,
-	MaxCoolDownLogEachIP: 1000,
+	MaxHistoryLogEachIP:  100,
+	MaxCoolDownLogEachIP: 100,
 
 	CoolDown:             10,
 	DialTimeOut:          15,
