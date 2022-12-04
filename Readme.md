@@ -6,7 +6,7 @@ In our case, our ip-pool is deployed on a nginx server with hundreds of IPs, who
 
 But managing IP availabiliy from nginx is restricted, this is what this program used for.
 
-## Usage
+## Introduction
 
 This is a monitor and load-balancer for ip-pool with huge amount of ip.
 
@@ -33,6 +33,19 @@ env GO111MODULE=on go build -o ipmanager
 Note: 
 1. This package by default requires go 1.18 or higher
 2. For nginx log is protected by default, you may want to run it with sudo.
+
+At this time, `/metric` router for prometheus is automatically enabled. You can access it with `HOST.com/metric` and use your favorite visualization plane to monitor the behavior of upstream ips.
+
+Add following config to your `prometheus.yml`.
+```bash 
+- job_name: 'ipmanager'
+  metrics_path: '/metric'
+  scrape_interval: 60s
+  static_configs:
+  - targets: ['HOST.com:PROBE_PORT']
+```
+
+And reboot prometheus to apply.
 
 ### Configuration
 Example configuration file built in with default value:
@@ -64,6 +77,47 @@ Example configuration file built in with default value:
 - `next`: The nginx entry of upstreams.
 - `max_history_log_each_ip`: The maximum number of history logs for each ip. You are suggested to set this value according to the size of ip pool and available space. 
 The size of json you get from curl, you can estimate with formula `max_history_log_each_ip * len(ip_pool) / 10` (KB).
+
+## Usage
+
+Use proxy:
+```bash
+curl -X [METHOD] yourhost.example.com:proxy_port \
+-H "Host: nginxServerHost.example.com"  \
+-H "X-Egress-Scheme: https" \
+-H "X-Egress-Host: target.example.com[:port]" \
+-H "X-Egress-Key: SomeNonEmptyStringForLoadBalance"   \
+```
+
+During this request:
+- Client `curl` visit ipmanager on yourhost.example.com
+- IPmanager select an available ip from the pool, build a tcp connection and transparently send to the nginx server pointed by `next` in config.
+- Nginx sends the request to the target server from the IP selected.
+- You are done with proxy.
+
+
+Fetch all ip status:
+```bash
+curl -X GET youhost.example.com:probe_port/api/ip/history
+```
+
+Fetch current config:
+```bash
+curl -X GET youhost.example.com:probe_port/api/config
+```
+
+Trigger renew IP history:
+```bash
+curl -X POST youhost.example.com:probe_port/api/ip/renew
+```
+
+Prometheus metrics:
+```bash
+curl -X GET youhost.example.com:probe_port/metrics
+```
+
+### TODO
+
 
 ## Parsing
 
@@ -100,6 +154,7 @@ You may want to extend:
 For more extensibility, you can raise an issue to let me know.
 
 ## TODO
-TODO: Add probe to prometheus for visualization.
 TODO: Add debug tracing to upstream. Which one has the very last request been sent to?
 TODO: Make performance test and tune.
+TODO: Fetch history by batches of ip.
+TODO: Manually ban or unban certain ip.
