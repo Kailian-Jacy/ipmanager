@@ -103,6 +103,8 @@ func Construct(ips [][]string) {
 			"port": ip[0],
 		}).Set(1)
 	}
+	All_Count_Metric.Set(float64(len(IPAll)))
+	Available_Count_Metric.Set(float64(len(IPAvailable)))
 	if config.C.Debug {
 		fmt.Println("Constructed IP:", IPAll)
 	}
