@@ -45,7 +45,9 @@ Add following config to your `prometheus.yml`.
   - targets: ['HOST.com:PROBE_PORT']
 ```
 
-And reboot prometheus to apply.
+And reboot prometheus to apply. If you are using grafana, you can easily adopt the dashboard from `ipmanager/additional/grafana-dashboard.json`.
+
+![](Additional/Images/grafana.png)
 
 ### Configuration
 Example configuration file built in with default value:
