@@ -13,9 +13,9 @@ import (
 )
 
 func Init() {
-	http.HandleFunc("/config", config.ProbeHandler)
-	http.HandleFunc("/ip/renew", IP.RenewHandler)
-	http.HandleFunc("/ip/history", IP.HistoryHandler)
+	http.HandleFunc("/api/config", config.ProbeHandler)
+	http.HandleFunc("/api/ip/renew", IP.RenewHandler)
+	http.HandleFunc("/api/ip/history", IP.HistoryHandler)
 	http.Handle("/metrics", promhttp.Handler())
 }
 
