@@ -3,6 +3,7 @@ package ip
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/exp/slices"
 	"io"
 	config "ipmanager/Config"
@@ -31,6 +32,45 @@ type IP struct {
 	CoolDowns [][]time.Time
 }
 
+func (ip *IP) Ban(idx int) {
+	cooldown := []time.Time{
+		time.Now(),
+		time.Now().Add(ip.CoolDownDuration()),
+	}
+	ip.Banned = true
+
+	// Disable
+	Available_Metric.With(prometheus.Labels{
+		"ip":   ip.Addr,
+		"port": ip.Port,
+	}).Set(0)
+	Available_Count_Metric.Dec()
+
+	ip.CoolDowns = append(ip.CoolDowns, cooldown)
+	Cooldown_Metric.With(prometheus.Labels{
+		"ip":   ip.Addr,
+		"port": ip.Port,
+	}).Set(1)
+	Cooldown_Count_Metric.Inc()
+	IPAvailable = slices.Delete(IPAvailable, idx, idx+1)
+}
+
+func (ip *IP) Release() {
+	ip.Banned = false
+	Cooldown_Metric.With(prometheus.Labels{
+		"ip":   ip.Addr,
+		"port": ip.Port,
+	}).Set(0)
+	Cooldown_Count_Metric.Dec()
+
+	IPAvailable = append(IPAvailable, ip.Addr)
+	Available_Metric.With(prometheus.Labels{
+		"ip":   ip.Addr,
+		"port": ip.Port,
+	}).Set(1)
+	Available_Count_Metric.Inc()
+}
+
 func Init() {
 	re2.Longest()
 
@@ -53,6 +93,15 @@ func Construct(ips [][]string) {
 			Banned: false,
 		}
 		port2IP[ip[0]] = ip[1]
+		// Construct Metrics.
+		Available_Metric.With(prometheus.Labels{
+			"ip":   ip[1],
+			"port": ip[0],
+		}).Set(1)
+		All_Metric.With(prometheus.Labels{
+			"ip":   ip[1],
+			"port": ip[0],
+		}).Set(1)
 	}
 	if config.C.Debug {
 		fmt.Println("Constructed IP:", IPAll)
@@ -96,13 +145,7 @@ func Watch() {
 	// Limit failure IP.
 	for idx := len(IPAvailable) - 1; idx >= 0; idx-- {
 		if !IPAll[IPAvailable[idx]].IsHealth() {
-			cooldown := []time.Time{
-				time.Now(),
-				time.Now().Add(IPAll[IPAvailable[idx]].CoolDownDuration()),
-			}
-			IPAll[IPAvailable[idx]].Banned = true
-			IPAll[IPAvailable[idx]].CoolDowns = append(IPAll[IPAvailable[idx]].CoolDowns, cooldown)
-			IPAvailable = slices.Delete(IPAvailable, idx, idx+1)
+			IPAll[IPAvailable[idx]].Ban(idx)
 		}
 	}
 
@@ -114,8 +157,7 @@ func Watch() {
 		}
 		if ip.Banned && ip.CoolDowns[len(ip.CoolDowns)-1][1].Before(time.Now()) {
 			// reuse the ip.
-			ip.Banned = false
-			IPAvailable = append(IPAvailable, ip.Addr)
+			ip.Release()
 		}
 		IPAll[idx] = ip
 	}

@@ -62,6 +62,8 @@ Example configuration file built in with default value:
 - `debug`: Causes verbose logging.
 - `probe_port`: The port for probe. Router `/probe` `/ping` and `/config` is available.
 - `next`: The nginx entry of upstreams.
+- `max_history_log_each_ip`: The maximum number of history logs for each ip. You are suggested to set this value according to the size of ip pool and available space. 
+The size of json you get from curl, you can estimate with formula `max_history_log_each_ip * len(ip_pool) / 10` (KB).
 
 ## Parsing
 

@@ -2,6 +2,7 @@ package web
 
 import (
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/exp/rand"
 	config "ipmanager/Config"
 	IP "ipmanager/ip"
@@ -15,6 +16,7 @@ func Init() {
 	http.HandleFunc("/config", config.ProbeHandler)
 	http.HandleFunc("/ip/renew", IP.RenewHandler)
 	http.HandleFunc("/ip/history", IP.HistoryHandler)
+	http.Handle("/metrics", promhttp.Handler())
 }
 
 func ProxyServeAt(port string) {
