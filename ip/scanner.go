@@ -132,4 +132,5 @@ func (l *Log) LogIP(e *Entry) {
 	} else {
 		ip.Failure += 1
 	}
+	ip.Describe()
 }

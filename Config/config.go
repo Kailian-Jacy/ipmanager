@@ -63,8 +63,8 @@ type Config struct {
 }
 
 var C = Config{
-	//Mode: "parse",
-	Mode: "serve",
+	Mode: "parse",
+	//Mode: "serve",
 
 	Debug:   true,
 	FIXPORT: "9999",

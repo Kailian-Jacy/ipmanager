@@ -7,27 +7,23 @@ import (
 
 var (
 	All_Metric = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "ip_all",
+		Name: "ipmanager_all_list",
 		Help: "All IP. Including banned and available IP.",
 	}, []string{"ip", "port"})
-	All_Count_Metric = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "ip_all_count",
-		Help: "All IP count. Including banned and available IP.",
-	})
 	Available_Metric = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "ip_available_list",
+		Name: "ipmanager_available_list",
 		Help: "The current usable IPs list.",
 	}, []string{"ip", "port"})
-	Available_Count_Metric = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "ip_available_count",
-		Help: "The current usable IPs count.",
-	})
 	Cooldown_Metric = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "ip_cooldown_list",
+		Name: "ipmanager_cooldown_list",
 		Help: "The current cooling down IPs list.",
 	}, []string{"ip", "port"})
-	Cooldown_Count_Metric = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "ip_cooldown_count",
-		Help: "The current cooling down IPs count.",
-	})
+	ConsecutiveFailure_Metric = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "ipmanager_consecutive_failure",
+		Help: "Consecutive failure number of some certain IP.",
+	}, []string{"ip", "port"})
+	History_Metric = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "ipmanager_history_response",
+		Help: "Number of responses in last five minutes of some certain IP.",
+	}, []string{"ip", "port", "status_code"})
 )

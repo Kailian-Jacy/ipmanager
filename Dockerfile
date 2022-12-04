@@ -15,5 +15,5 @@ RUN go mod init ipmanager \
 FROM alpine:latest
 ARG CONFIG
 COPY --from=BUILDER /go/bin/app/ipmannager /ipmannager
-COPY ./Config/config.json /config.json
+COPY Config/config.example.json /config.json
 CMD ["/ipmannager --config ${CONFIG}"]

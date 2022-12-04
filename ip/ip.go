@@ -44,14 +44,12 @@ func (ip *IP) Ban(idx int) {
 		"ip":   ip.Addr,
 		"port": ip.Port,
 	}).Set(0)
-	Available_Count_Metric.Dec()
 
 	ip.CoolDowns = append(ip.CoolDowns, cooldown)
 	Cooldown_Metric.With(prometheus.Labels{
 		"ip":   ip.Addr,
 		"port": ip.Port,
 	}).Set(1)
-	Cooldown_Count_Metric.Inc()
 	IPAvailable = slices.Delete(IPAvailable, idx, idx+1)
 }
 
@@ -61,14 +59,30 @@ func (ip *IP) Release() {
 		"ip":   ip.Addr,
 		"port": ip.Port,
 	}).Set(0)
-	Cooldown_Count_Metric.Dec()
 
 	IPAvailable = append(IPAvailable, ip.Addr)
 	Available_Metric.With(prometheus.Labels{
 		"ip":   ip.Addr,
 		"port": ip.Port,
 	}).Set(1)
-	Available_Count_Metric.Inc()
+}
+
+func (ip *IP) Describe() {
+	ConsecutiveFailure_Metric.With(prometheus.Labels{
+		"ip":   ip.Addr,
+		"port": ip.Port,
+	}).Set(float64(ip.Failure))
+	// Count code in last five minutes.
+	count := make(map[string]int, 0)
+	for idx := len(ip.History) - 1; idx >= 0; idx-- {
+		if ip.History[idx].Time.Before(time.Now().Add(-time.Minute * 5)) {
+			break
+		}
+		count[ip.History[idx].StatusCode] += 1
+	}
+	for code, num := range count {
+		History_Metric.With(prometheus.Labels{"ip": ip.Addr, "port": ip.Port, "status_code": code}).Set(float64(num))
+	}
 }
 
 func Init() {
@@ -103,8 +117,6 @@ func Construct(ips [][]string) {
 			"port": ip[0],
 		}).Set(1)
 	}
-	All_Count_Metric.Set(float64(len(IPAll)))
-	Available_Count_Metric.Set(float64(len(IPAvailable)))
 	if config.C.Debug {
 		fmt.Println("Constructed IP:", IPAll)
 	}
