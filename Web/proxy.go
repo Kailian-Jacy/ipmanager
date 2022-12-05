@@ -73,14 +73,4 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 		io.Copy(*src, *dst)
 	}()
 
-	select {
-	//case <-done:
-	//	return
-	case <-time.After(p.timeOut):
-		//fmt.Println("Connection timeout.")
-		//(*src).Write([]byte(p.timeOutErr.Error()))
-		//(*dst).Write([]byte(p.timeOutErr.Error()))
-		return
-	}
-	// Either side connection close would cause "defer: Send EOF and close connection."
 }
