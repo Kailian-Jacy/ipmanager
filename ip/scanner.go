@@ -122,6 +122,7 @@ func (l *Log) LogIP(e *Entry) {
 	ip, ok := IPAll[port2IP[e.Port]]
 	if !ok {
 		fmt.Println("Port reference error. No such port: ", e.Port)
+		return
 	}
 	ip.History = append(ip.History, e)
 	if len(ip.History) > config.C.MaxHistoryLogEachIP {
