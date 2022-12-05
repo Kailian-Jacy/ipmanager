@@ -67,7 +67,7 @@ var C = Config{
 	//Mode: "serve",
 
 	Debug:   true,
-	FIXPORT: "9999",
+	FIXPORT: "",
 
 	Next:         "127.0.0.1",
 	ProbePort:    "9095",

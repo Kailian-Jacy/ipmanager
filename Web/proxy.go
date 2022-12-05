@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	config "ipmanager/Config"
+	"log"
 	"net"
 	"time"
 )
@@ -57,14 +58,22 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 	}()
 
 	go func() {
+		// If Copy ends with EOF or the other errors, send done to notify the others.
+		// If Copy ends with connection closed, directly return, because the other side would be closed safely.
 		if _, err := io.Copy(*dst, *src); err != nil {
-			return
+			if err.Error() == "use of closed network connection" {
+				return
+			}
+			log.Println(err.Error())
 		}
 		done <- struct{}{}
 	}()
 	go func() {
 		if _, err := io.Copy(*src, *dst); err != nil {
-			return
+			if err.Error() == "use of closed network connection" {
+				return
+			}
+			log.Println(err.Error())
 		}
 		done <- struct{}{}
 	}()
