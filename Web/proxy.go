@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"io"
 	config "ipmanager/Config"
-	"log"
 	"net"
-	"strings"
 	"time"
 )
 
@@ -51,7 +49,7 @@ func (p *TcpProxy) gate(src *net.Conn) bool {
 
 // TcpProxy receive the connection and proxy to target.
 func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
-	done := make(chan struct{})
+	//done := make(chan struct{})
 
 	defer func() {
 		(*dst).Close()
@@ -61,31 +59,27 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 	go func() {
 		// If Copy ends with EOF or the other errors, send done to notify the others.
 		// If Copy ends with connection closed, directly return, because the other side would be closed safely.
-		if _, err := io.Copy(*dst, *src); err != nil {
-			if strings.Contains(err.Error(), "closed network connection") {
-				return
-			}
-			log.Println(err.Error())
-		}
-		done <- struct{}{}
+		defer func() {
+			(*dst).Close()
+			(*src).Close()
+		}()
+		io.Copy(*dst, *src)
 	}()
 	go func() {
-		if _, err := io.Copy(*src, *dst); err != nil {
-			if strings.Contains(err.Error(), "closed network connection") {
-				return
-			}
-			log.Println(err.Error())
-		}
-		done <- struct{}{}
+		defer func() {
+			(*dst).Close()
+			(*src).Close()
+		}()
+		io.Copy(*src, *dst)
 	}()
 
 	select {
-	case <-done:
-		return
+	//case <-done:
+	//	return
 	case <-time.After(p.timeOut):
 		//fmt.Println("Connection timeout.")
-		(*src).Write([]byte(p.timeOutErr.Error()))
-		(*dst).Write([]byte(p.timeOutErr.Error()))
+		//(*src).Write([]byte(p.timeOutErr.Error()))
+		//(*dst).Write([]byte(p.timeOutErr.Error()))
 		return
 	}
 	// Either side connection close would cause "defer: Send EOF and close connection."
