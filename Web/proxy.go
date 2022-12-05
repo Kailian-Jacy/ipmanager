@@ -49,16 +49,12 @@ func (p *TcpProxy) gate(src *net.Conn) bool {
 
 // TcpProxy receive the connection and proxy to target.
 func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
-	//done := make(chan struct{})
-
 	defer func() {
 		(*dst).Close()
 		(*src).Close()
 	}()
 
 	go func() {
-		// If Copy ends with EOF or the other errors, send done to notify the others.
-		// If Copy ends with connection closed, directly return, because the other side would be closed safely.
 		defer func() {
 			(*dst).Close()
 			(*src).Close()

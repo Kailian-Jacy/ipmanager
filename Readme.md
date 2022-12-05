@@ -1,10 +1,16 @@
-# ipmanager
+# IPManager
 
-This is a proxy layer used for probe and control qsc-idc ip-pool.
+This is a proxy and manage layer used for ip-pool based on nginx.
 
 In our case, our ip-pool is deployed on a nginx server with hundreds of IPs, who plainly takes proxy and sends out requests through one of its IP.
 
 But managing IP availabiliy from nginx is restricted, this is what this program used for.
+
+IPManager Features:
+
+- Easy and small. Heap consumption managing 300 IPs with 1000 * 300 logs:
+![](Additional/Images/pprof.png)
+- Stateless, easy to scale. No database required. All the status are stored in nginx log.
 
 ## Introduction
 
@@ -118,8 +124,10 @@ Prometheus metrics:
 curl -X GET youhost.example.com:probe_port/metrics
 ```
 
-### TODO
-
+Check performance. You may install pprof first:
+```bash
+pprof -http=:9099 http://youhost.example.com:probe_port/debug/pprof/(heap|allocs|goroutine|threadcreate|block|mutex)
+```
 
 ## Parsing
 
