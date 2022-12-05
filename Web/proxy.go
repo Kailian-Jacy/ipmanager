@@ -7,6 +7,7 @@ import (
 	config "ipmanager/Config"
 	"log"
 	"net"
+	"strings"
 	"time"
 )
 
@@ -61,7 +62,7 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 		// If Copy ends with EOF or the other errors, send done to notify the others.
 		// If Copy ends with connection closed, directly return, because the other side would be closed safely.
 		if _, err := io.Copy(*dst, *src); err != nil {
-			if err.Error() == "use of closed network connection" {
+			if strings.Contains(err.Error(), "closed network connection") {
 				return
 			}
 			log.Println(err.Error())
@@ -70,7 +71,7 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 	}()
 	go func() {
 		if _, err := io.Copy(*src, *dst); err != nil {
-			if err.Error() == "use of closed network connection" {
+			if strings.Contains(err.Error(), "closed network connection") {
 				return
 			}
 			log.Println(err.Error())
