@@ -24,11 +24,11 @@ type Log struct {
 	Count int64
 }
 
-func (l *Log) Tail(mode string) []*Entry {
+func (l *Log) Tail(mode string) ([]*Entry, error) {
 	// Reopen each time.
 	var err error
 	if l.F, err = os.Open(l.Path); err != nil {
-		return nil
+		return nil, err
 	}
 	defer l.F.Close()
 
@@ -37,7 +37,7 @@ func (l *Log) Tail(mode string) []*Entry {
 		if mode != "parse" {
 			fmt.Println("Parsing access log...")
 			l.Count, err = l.F.Seek(0, 2)
-			return nil
+			return nil, nil
 		}
 	}
 
@@ -62,7 +62,7 @@ func (l *Log) Tail(mode string) []*Entry {
 		l.Count, _ = l.F.Seek(0, 2)
 		break
 	}
-	return entries
+	return entries, nil
 }
 
 type Entry struct {
