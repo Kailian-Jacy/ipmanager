@@ -189,9 +189,9 @@ func (ip *IP) Parse(ae []*Entry) *IP {
 		cl, ok := code_label[e.StatusCode]
 		if !ok {
 			cl = prometheus.Labels{
-				"ip":   ip.Addr,
-				"port": ip.Port,
-				"code": e.StatusCode,
+				"ip":          ip.Addr,
+				"port":        ip.Port,
+				"status_code": e.StatusCode,
 			}
 			code_label[e.StatusCode] = cl
 		}
