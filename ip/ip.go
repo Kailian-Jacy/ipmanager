@@ -135,7 +135,11 @@ func AllIP() [][]string {
 func Watch() {
 	// Scan access log to compose success history.
 	for idx, ip := range IPAll {
-		ae := ip.log.Tail(config.C.Mode)
+		ae, err := ip.log.Tail(config.C.Mode)
+		if err != nil {
+			fmt.Printf("IP %s has no accesslog: %s\n", ip.Addr, err.Error())
+			continue
+		}
 		IPAll[idx] = ip.Parse(ae)
 	}
 
@@ -161,10 +165,6 @@ func Watch() {
 }
 
 func (ip *IP) Parse(ae []*Entry) *IP {
-	if len(ae) == 0 {
-		fmt.Printf("IP %s has no access log. ", ip.Addr)
-		return ip
-	}
 	label := prometheus.Labels{
 		"ip":   ip.Addr,
 		"port": ip.Port,
