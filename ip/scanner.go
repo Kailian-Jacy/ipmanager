@@ -19,20 +19,16 @@ var re_success = regexp.MustCompile(`[2-3][0-9]{2}`)
 var re_failure = regexp.MustCompile(`[4-5][0-9]{2}`)
 
 type Log struct {
+	Path  string
 	F     *os.File
 	Count int64
 }
 
-var AccessLog = Log{
-	F:     nil,
-	Count: 0,
-}
-
-func (l *Log) Tail(path string, mode string) []*Entry {
+func (l *Log) Tail(mode string) []*Entry {
 	// Reopen each time.
 	var err error
-	if l.F, err = os.Open(path); err != nil {
-		log.Fatalf(err.Error())
+	if l.F, err = os.Open(l.Path); err != nil {
+		return nil
 	}
 	defer l.F.Close()
 
@@ -73,6 +69,7 @@ type Entry struct {
 	Time       time.Time
 	StatusCode string
 	ExgressKey string
+	Target     string
 	Port       string
 }
 
@@ -95,6 +92,7 @@ var statusCodeReA = regexp.MustCompile(` [0-9]{3} `)
 var exgressKeyReA = regexp.MustCompile(`Exgress_key: [0-9a-zA-Z]+`)
 var portReA = regexp.MustCompile(`127.0.0.1:[0-9]{5}`)
 var portReB = regexp.MustCompile(`[0-9]{5}`)
+var targetReA = regexp.MustCompile(`-> Request Host: [^/]* <-`)
 
 func BuildEntry(line string) (*Entry, bool) {
 	var l Entry
@@ -105,33 +103,12 @@ func BuildEntry(line string) (*Entry, bool) {
 	}
 	l.StatusCode = statusCodeReA.FindString(line)
 	l.ExgressKey = exgressKeyReA.FindString(line)
+	l.Target = targetReA.FindString(line)
 	l.Port = strings.TrimSpace(portReA.FindString(line))
 	if l.Port == "" {
 		return nil, false
 	}
 	l.Port = strings.Trim(portReB.FindString(l.Port), " ")
-	return &l, true
-}
 
-func (l *Log) LogIP(e *Entry) {
-	// Build IP History from the log entry
-	if e.Port == "" {
-		// Empty source.
-		return
-	}
-	ip, ok := IPAll[port2IP[e.Port]]
-	if !ok {
-		fmt.Println("Port reference error. No such port: ", e.Port)
-		return
-	}
-	ip.History = append(ip.History, e)
-	if len(ip.History) > config.C.MaxHistoryLogEachIP {
-		ip.History = ip.History[config.C.MaxHistoryLogEachIP/2:]
-	}
-	if e.IsSuccess() {
-		ip.Failure = 0
-	} else {
-		ip.Failure += 1
-	}
-	ip.Describe()
+	return &l, true
 }

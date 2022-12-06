@@ -1,0 +1,17 @@
+{
+  "mode": "parse",
+  "debug": true,
+  "probe_port": "9091",
+  "proxy_port": "18000",
+  "next": "10.76.8.19",
+  "scan_interval_min": 5,
+  "access_log_path": "/Users/kailianjacy/go/ipmanager/Config/%s.access.log",
+  "upstream_conf_path": "/Users/kailianjacy/go/ipmanager/Config/upstream.conf",
+  "max_history_log_each_ip": 1000,
+  "max_cool_down_log_each_ip": 1000,
+  "cool_down_min": 30,
+  "dial_timeout": 15,
+  "max_connection_timeout": 100,
+  "strategy": "consecutive",
+  "consecutive_failure": 3
+}

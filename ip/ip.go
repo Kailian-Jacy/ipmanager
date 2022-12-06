@@ -30,6 +30,7 @@ type IP struct {
 	// Last cool down.
 	Failure   int // Consecutive failures
 	CoolDowns [][]time.Time
+	log       Log
 }
 
 func (ip *IP) Ban(idx int) {
@@ -67,24 +68,6 @@ func (ip *IP) Release() {
 	}).Set(1)
 }
 
-func (ip *IP) Describe() {
-	ConsecutiveFailure_Metric.With(prometheus.Labels{
-		"ip":   ip.Addr,
-		"port": ip.Port,
-	}).Set(float64(ip.Failure))
-	// Count code in last five minutes.
-	count := make(map[string]int, 0)
-	for idx := len(ip.History) - 1; idx >= 0; idx-- {
-		if ip.History[idx].Time.Before(time.Now().Add(-time.Minute * 5)) {
-			break
-		}
-		count[ip.History[idx].StatusCode] += 1
-	}
-	for code, num := range count {
-		History_Metric.With(prometheus.Labels{"ip": ip.Addr, "port": ip.Port, "status_code": code}).Set(float64(num))
-	}
-}
-
 func Init() {
 	re2.Longest()
 
@@ -105,6 +88,11 @@ func Construct(ips [][]string) {
 			Port:   ip[0],
 			Addr:   ip[1],
 			Banned: false,
+			log: Log{
+				Path:  fmt.Sprintf(config.C.AccessLogPath, ip[1]),
+				F:     nil,
+				Count: 0,
+			},
 		}
 		port2IP[ip[0]] = ip[1]
 		// Construct Metrics.
@@ -145,15 +133,10 @@ func AllIP() [][]string {
 
 // Watch and update IP availability and history.
 func Watch() {
-	//if !watcher.TryLock() {
-	//	return
-	//}
-	//watcher.Lock()
-	//defer watcher.Unlock()
 	// Scan access log to compose success history.
-	ae := AccessLog.Tail(config.C.AccessLogPath, config.C.Mode)
-	for _, e := range ae {
-		AccessLog.LogIP(e)
+	for idx, ip := range IPAll {
+		ae := ip.log.Tail(config.C.Mode)
+		IPAll[idx] = ip.Parse(ae)
 	}
 
 	// Limit failure IP.
@@ -175,6 +158,47 @@ func Watch() {
 		}
 		IPAll[idx] = ip
 	}
+}
+
+func (ip *IP) Parse(ae []*Entry) *IP {
+	if len(ae) == 0 {
+		fmt.Printf("IP %s has no access log. ", ip.Addr)
+		return ip
+	}
+	label := prometheus.Labels{
+		"ip":   ip.Addr,
+		"port": ip.Port,
+	}
+	code_label := make(map[string]prometheus.Labels, 10)
+	if len(ae) > config.C.MaxHistoryLogEachIP/2 {
+		ae = ae[len(ae)-1-config.C.MaxHistoryLogEachIP/2:]
+	}
+	for _, e := range ae {
+		if len(ip.History) > config.C.MaxHistoryLogEachIP {
+			ip.History = ip.History[config.C.MaxHistoryLogEachIP/2:]
+		}
+		// Count failure.
+		if e.IsSuccess() {
+			ip.Failure = 0
+			ConsecutiveFailure_Metric.With(label).Set(float64(0))
+		} else {
+			ip.Failure += 1
+			ConsecutiveFailure_Metric.With(label).Inc()
+		}
+		// Parse history
+		cl, ok := code_label[e.StatusCode]
+		if !ok {
+			cl = prometheus.Labels{
+				"ip":   ip.Addr,
+				"port": ip.Port,
+				"code": e.StatusCode,
+			}
+			code_label[e.StatusCode] = cl
+		}
+		History_Metric.With(cl).Inc()
+		ip.History = append(ip.History, e)
+	}
+	return ip
 }
 
 func Probe() map[string]IP {
