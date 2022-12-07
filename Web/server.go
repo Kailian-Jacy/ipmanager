@@ -37,7 +37,7 @@ func ProxyServeAt(port string) {
 			fmt.Println("Receiving proxy.")
 		}
 		go func() {
-			if config.C.FIXPORT != "" {
+			if config.C.Debug && config.C.FIXPORT != "" {
 				Proxy(tp, &conn, config.C.Next+":"+config.C.FIXPORT)
 			} else {
 				Proxy(tp, &conn, LoadBalance())
@@ -54,12 +54,12 @@ func ListenAndServe(port string) {
 // LoadBalance handle balancing and return port.
 func LoadBalance() string {
 	// Rand a hash for load balancing.
-	s := rand.NewSource(uint64(time.Now().Unix()))
-	r := rand.New(s) // initialize local pseudorandom generator
-	r.Intn(len(IP.IPAvailable))
+	t := time.Now().UnixMilli()
+	r := rand.New(rand.NewSource(uint64(t)))
+	p := r.Intn(len(IP.IPAvailable))
 	// "10.76.8.101:19001"
 	if config.C.Debug {
-		fmt.Println("Balanced to: " + IP.IPAvailable[r.Intn(len(IP.IPAvailable))])
+		fmt.Println("Balanced to: " + IP.IPAvailable[p])
 	}
-	return config.C.Next + ":" + IP.IPAll[IP.IPAvailable[r.Intn(len(IP.IPAvailable))]].Port
+	return config.C.Next + ":" + IP.IPAll[IP.IPAvailable[p]].Port
 }

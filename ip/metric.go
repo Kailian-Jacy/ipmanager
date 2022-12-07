@@ -25,5 +25,5 @@ var (
 	History_Metric = promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "ipmanager_history_response",
 		Help: "Number of responses in last five minutes of some certain IP.",
-	}, []string{"ip", "port", "status_code"})
+	}, []string{"ip", "port", "status_code", "target"})
 )

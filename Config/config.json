@@ -5,7 +5,7 @@
   "proxy_port": "18000",
   "next": "10.76.8.19",
   "scan_interval_min": 5,
-  "access_log_path": "/Users/kailianjacy/go/ipmanager/Config/%s.access.log",
+  "access_log_path": "/Users/kailianjacy/go/ipmanager/Config/%s.accss.log",
   "upstream_conf_path": "/Users/kailianjacy/go/ipmanager/Config/upstream.conf",
   "max_history_log_each_ip": 1000,
   "max_cool_down_log_each_ip": 1000,

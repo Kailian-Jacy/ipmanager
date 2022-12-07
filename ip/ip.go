@@ -192,6 +192,7 @@ func (ip *IP) Parse(ae []*Entry) *IP {
 				"ip":          ip.Addr,
 				"port":        ip.Port,
 				"status_code": e.StatusCode,
+				"target":      e.Target,
 			}
 			code_label[e.StatusCode] = cl
 		}
