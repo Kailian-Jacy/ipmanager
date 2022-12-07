@@ -51,6 +51,8 @@ func (p *TcpProxy) gate(src *net.Conn) bool {
 
 // TcpProxy receive the connection and proxy to target.
 func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
+	done := make(chan bool, 2)
+
 	defer func() {
 		log.Println("tcpproxy.defer: dst close.", (*dst).Close())
 		log.Println("tcpproxy.defer: src close.", (*src).Close())
@@ -65,6 +67,7 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 		if err != nil {
 			log.Println("tcpproxy.func2.proxy.Copy.", err)
 		}
+		done <- true
 	}()
 	go func() {
 		defer func() {
@@ -75,6 +78,17 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 		if err != nil {
 			log.Println("tcpproxy.func3.proxy.Copy.", err)
 		}
+		done <- true
 	}()
 
+	select {
+	case <-done:
+		if config.C.Debug {
+			log.Println("tcpproxy.proxy: done.")
+			return
+		}
+	case <-time.After(p.timeOut):
+		log.Println("tcpproxy.proxy.main: timeout.")
+		return
+	}
 }
