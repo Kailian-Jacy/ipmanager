@@ -2,9 +2,9 @@ package web
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	config "ipmanager/Config"
+	"log"
 	"net"
 	"time"
 )
@@ -17,12 +17,14 @@ type ProxyHandler interface {
 
 func Proxy(p ProxyHandler, src *net.Conn, dPort string) {
 	if !p.gate(src) {
+		log.Println("gate.")
 		return
 	}
 
 	dst, err := net.DialTimeout("tcp", dPort, time.Duration(config.C.DialTimeOut)*time.Second)
 	if err != nil {
-		fmt.Println("dial failure to service detected: " + err.Error())
+		log.Println("dial failure to service detected: " + err.Error())
+		// TODO: Return http error.
 		(*src).Write([]byte("HTTP/1.1 502 Bad Gateway\n\r[PROXY RESENDING ERROR FROM UPSTREAM:]\n\r" + err.Error() + "\n"))
 		(*src).Close()
 		return
@@ -50,23 +52,29 @@ func (p *TcpProxy) gate(src *net.Conn) bool {
 // TcpProxy receive the connection and proxy to target.
 func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 	defer func() {
-		(*dst).Close()
-		(*src).Close()
+		log.Println("tcpproxy.defer: dst close.", (*dst).Close())
+		log.Println("tcpproxy.defer: src close.", (*src).Close())
 	}()
 
 	go func() {
 		defer func() {
-			(*dst).Close()
-			(*src).Close()
+			log.Println("tcpproxy.func2.proxy: dst close.", (*dst).Close())
+			log.Println("tcpproxy.func2.proxy: src close.", (*src).Close())
 		}()
-		io.Copy(*dst, *src)
+		_, err := io.Copy(*src, *dst)
+		if err != nil {
+			log.Println("tcpproxy.func2.proxy.Copy.", err)
+		}
 	}()
 	go func() {
 		defer func() {
-			(*dst).Close()
-			(*src).Close()
+			log.Println("tcpproxy.func3.proxy: dst close.", (*dst).Close())
+			log.Println("tcpproxy.func3.proxy: dst close.", (*src).Close())
 		}()
-		io.Copy(*src, *dst)
+		_, err := io.Copy(*src, *dst)
+		if err != nil {
+			log.Println("tcpproxy.func3.proxy.Copy.", err)
+		}
 	}()
 
 }
