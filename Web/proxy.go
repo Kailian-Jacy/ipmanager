@@ -17,7 +17,9 @@ type ProxyHandler interface {
 
 func Proxy(p ProxyHandler, src *net.Conn, dPort string) {
 	if !p.gate(src) {
-		log.Println("gate.")
+		if config.C.Debug {
+			log.Println("gate.")
+		}
 		return
 	}
 	if config.C.Debug {
@@ -43,7 +45,7 @@ type TcpProxy struct {
 
 var tp = &TcpProxy{
 	timeOut:    time.Duration(config.C.MaxConnectionTimeout) * time.Second,
-	timeOutErr: errors.New("HTTP/1.1 504 Gateway Timeout\nProxy connection timeout.\n"),
+	timeOutErr: errors.New("HTTP/1.1 504 Gateway Timeout\n\nProxy connection timeout.\n"),
 }
 
 // gate verify the header of connection and transfer to proxy or return.
@@ -57,28 +59,46 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 	done := make(chan bool, 2)
 
 	defer func() {
-		log.Println("tcpproxy.defer: dst close.", (*dst).Close())
-		log.Println("tcpproxy.defer: src close.", (*src).Close())
+		err := (*dst).Close()
+		if config.C.Debug && err != nil {
+			log.Println("tcpproxy.defer: dst close.", err)
+		}
+		err = (*src).Close()
+		if config.C.Debug && err != nil {
+			log.Println("tcpproxy.defer: src close.", err)
+		}
 	}()
 
 	go func() {
 		defer func() {
-			log.Println("tcpproxy.func2.proxy: dst close.", (*dst).Close())
-			log.Println("tcpproxy.func2.proxy: src close.", (*src).Close())
+			err := (*dst).Close()
+			if config.C.Debug && err != nil {
+				log.Println("tcpproxy.func2.proxy: dst close.", err)
+			}
+			err = (*src).Close()
+			if config.C.Debug && err != nil {
+				log.Println("tcpproxy.func2.proxy: src close.", err)
+			}
 		}()
 		_, err := io.Copy(*dst, *src)
-		if err != nil {
+		if config.C.Debug && err != nil {
 			log.Println("tcpproxy.func2.proxy.Copy.", err)
 		}
 		done <- true
 	}()
 	go func() {
 		defer func() {
-			log.Println("tcpproxy.func3.proxy: dst close.", (*dst).Close())
-			log.Println("tcpproxy.func3.proxy: dst close.", (*src).Close())
+			err := (*dst).Close()
+			if config.C.Debug && err != nil {
+				log.Println("tcpproxy.func3.proxy: dst close.", err)
+			}
+			err = (*src).Close()
+			if config.C.Debug && err != nil {
+				log.Println("tcpproxy.func3.proxy: src close.", err)
+			}
 		}()
 		_, err := io.Copy(*src, *dst)
-		if err != nil {
+		if config.C.Debug && err != nil {
 			log.Println("tcpproxy.func3.proxy.Copy.", err)
 		}
 		done <- true
@@ -91,7 +111,9 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 		}
 		return
 	case <-time.After(p.timeOut):
-		log.Println("tcpproxy.proxy.main: timeout.")
+		if config.C.Debug {
+			log.Println("tcpproxy.proxy.main: timeout.")
+		}
 		return
 	}
 }
