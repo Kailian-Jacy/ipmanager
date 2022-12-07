@@ -20,6 +20,9 @@ func Proxy(p ProxyHandler, src *net.Conn, dPort string) {
 		log.Println("gate.")
 		return
 	}
+	if config.C.Debug {
+		log.Println("Proxy: proxy to: ", dPort)
+	}
 
 	dst, err := net.DialTimeout("tcp", dPort, time.Duration(config.C.DialTimeOut)*time.Second)
 	if err != nil {
@@ -63,7 +66,7 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 			log.Println("tcpproxy.func2.proxy: dst close.", (*dst).Close())
 			log.Println("tcpproxy.func2.proxy: src close.", (*src).Close())
 		}()
-		_, err := io.Copy(*src, *dst)
+		_, err := io.Copy(*dst, *src)
 		if err != nil {
 			log.Println("tcpproxy.func2.proxy.Copy.", err)
 		}
@@ -85,8 +88,8 @@ func (p *TcpProxy) proxy(src *net.Conn, dst *net.Conn) {
 	case <-done:
 		if config.C.Debug {
 			log.Println("tcpproxy.proxy: done.")
-			return
 		}
+		return
 	case <-time.After(p.timeOut):
 		log.Println("tcpproxy.proxy.main: timeout.")
 		return

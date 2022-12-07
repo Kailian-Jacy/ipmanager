@@ -1,9 +1,10 @@
 {
   "mode": "parse",
   "debug": true,
+  "fix_port": "9099",
   "probe_port": "9091",
   "proxy_port": "18000",
-  "next": "10.76.8.19",
+  "next": "127.0.0.1",
   "scan_interval_min": 5,
   "access_log_path": "/Users/kailianjacy/go/ipmanager/Config/%s.accss.log",
   "upstream_conf_path": "/Users/kailianjacy/go/ipmanager/Config/upstream.conf",
