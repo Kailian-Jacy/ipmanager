@@ -3,13 +3,11 @@ package web
 import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"golang.org/x/exp/rand"
 	config "ipmanager/Config"
 	IP "ipmanager/ip"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
-	"time"
 )
 
 func Init() {
@@ -40,7 +38,9 @@ func ProxyServeAt(port string) {
 			if config.C.Debug && config.C.FIXPORT != "" {
 				Proxy(tp, &conn, config.C.Next+":"+config.C.FIXPORT)
 			} else {
-				Proxy(tp, &conn, LoadBalance())
+				if dport := LoadBalance(); dport != "" {
+					Proxy(tp, &conn, dport)
+				}
 			}
 		}()
 	}
@@ -49,17 +49,4 @@ func ProxyServeAt(port string) {
 func ListenAndServe(port string) {
 	fmt.Println("Prober is listening at 127.0.0.1:" + port)
 	http.ListenAndServe(":"+port, nil)
-}
-
-// LoadBalance handle balancing and return port.
-func LoadBalance() string {
-	// Rand a hash for load balancing.
-	t := time.Now().UnixMilli()
-	r := rand.New(rand.NewSource(uint64(t)))
-	p := r.Intn(len(IP.IPAvailable))
-	// "10.76.8.101:19001"
-	if config.C.Debug {
-		fmt.Println("Balanced to: " + IP.IPAvailable[p])
-	}
-	return config.C.Next + ":" + IP.IPAll[IP.IPAvailable[p]].Port
 }

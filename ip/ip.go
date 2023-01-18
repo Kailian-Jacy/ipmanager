@@ -122,7 +122,6 @@ func AllIP() [][]string {
 	if err != nil {
 		panic(err)
 	}
-
 	ips := re.FindAllString(string(all), -1)
 	ipall := make([][]string, len(ips))
 	for i := range ips {

@@ -60,6 +60,11 @@ type Config struct {
 	Strategy string `json:"strategy"`
 	// ConsecutiveFailure defines the number of consecutive failure to judge an IP unhealthy.
 	ConsecutiveFailure int `json:"consecutive_failure"`
+
+	TokenNumber       int `json:"token_number"`
+	TokenScanInterval int `json:"token_scan_interval_sec"`
+	TokenInterval     int `json:"token_interval"`
+	TryTimes          int `json:"try_times"`
 }
 
 var C = Config{
@@ -74,8 +79,8 @@ var C = Config{
 	ProxyPort:    "9096",
 	ScanInterval: 5,
 
-	AccessLogPath:    "/Users/kailianjacy/go/ipmanager/Config/host.access.log",
-	UpstreamConfPath: "/Users/kailianjacy/go/ipmanager/Config/upstream.conf",
+	AccessLogPath:    "C:/Users/gratian/Desktop/ipmanager/Config/host.access.log",
+	UpstreamConfPath: "C:/Users/gratian/Desktop/ipmanager/Config/upstream.conf",
 
 	MaxHistoryLogEachIP:  100,
 	MaxCoolDownLogEachIP: 100,
@@ -86,6 +91,11 @@ var C = Config{
 
 	Strategy:           "consecutive",
 	ConsecutiveFailure: 3,
+
+	TokenNumber:       20,
+	TokenInterval:     5,
+	TokenScanInterval: 1,
+	TryTimes:          5,
 }
 
 func LoadMainConfig(path string) {

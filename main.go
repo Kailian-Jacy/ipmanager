@@ -28,5 +28,13 @@ func main() {
 		}
 	}()
 
+	web.InitPool()
+	go func() {
+		for {
+			time.Sleep(time.Duration(config.C.TokenScanInterval) * time.Second)
+			web.WatchToken()
+		}
+	}()
+
 	web.ProxyServeAt(config.C.ProxyPort)
 }
