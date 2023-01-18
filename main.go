@@ -15,6 +15,7 @@ func main() {
 
 	// Fetch config and start serving.
 	IP.Init()
+	IP.C.Start()
 
 	// Serve for proxy and probe.
 	web.Init()
@@ -25,14 +26,6 @@ func main() {
 			//  keep looping to update IP availability.
 			time.Sleep(time.Duration(config.C.ScanInterval) * time.Minute)
 			IP.Watch()
-		}
-	}()
-
-	web.InitPool()
-	go func() {
-		for {
-			time.Sleep(time.Duration(config.C.TokenScanInterval) * time.Second)
-			web.WatchToken()
 		}
 	}()
 

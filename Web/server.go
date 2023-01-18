@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"time"
 )
 
 func Init() {
@@ -49,4 +50,21 @@ func ProxyServeAt(port string) {
 func ListenAndServe(port string) {
 	fmt.Println("Prober is listening at 127.0.0.1:" + port)
 	http.ListenAndServe(":"+port, nil)
+}
+
+// LoadBalance handle balancing and return port.
+func LoadBalance() string {
+	// Rand a hash for load balancing.
+	k := config.C.TryTimes
+	for i := 0; i < k; i++ {
+		addr, ok := IP.GetAvailableIP()
+		if ok {
+			if config.C.Debug {
+				fmt.Printf("Balanced to: %s", addr)
+			}
+			return config.C.Next + ":" + IP.IPAll[addr].Port
+		}
+		time.Sleep(time.Second)
+	}
+	return ""
 }

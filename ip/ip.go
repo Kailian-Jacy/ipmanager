@@ -74,6 +74,8 @@ func Init() {
 	// Fetch all reserved IP.
 	Construct(AllIP())
 
+	InitPool()
+
 	// Detect available IPs crontab job.
 	Watch()
 }
