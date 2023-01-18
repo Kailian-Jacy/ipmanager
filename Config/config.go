@@ -61,10 +61,8 @@ type Config struct {
 	// ConsecutiveFailure defines the number of consecutive failure to judge an IP unhealthy.
 	ConsecutiveFailure int `json:"consecutive_failure"`
 
-	TokenNumber       int `json:"token_number"`
-	TokenScanInterval int `json:"token_scan_interval_sec"`
-	TokenInterval     int `json:"token_interval"`
-	TryTimes          int `json:"try_times"`
+	TokenInterval int `json:"token_interval"`
+	TryTimes      int `json:"try_times"`
 }
 
 var C = Config{
@@ -92,10 +90,8 @@ var C = Config{
 	Strategy:           "consecutive",
 	ConsecutiveFailure: 3,
 
-	TokenNumber:       20,
-	TokenInterval:     5,
-	TokenScanInterval: 1,
-	TryTimes:          5,
+	TokenInterval: 5,
+	TryTimes:      5,
 }
 
 func LoadMainConfig(path string) {
