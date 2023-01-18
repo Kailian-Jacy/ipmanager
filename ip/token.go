@@ -70,7 +70,9 @@ func GetAvailableIP() (string, bool) {
 		token := t.(Token)
 		if !token.ip.Banned {
 			token.next = time.Now().Add(time.Duration(Config.C.TokenInterval) * time.Second)
+			C.runningMu.Lock()
 			C.add <- &token
+			C.runningMu.Unlock()
 			return token.ip.Addr, true
 		}
 	}
