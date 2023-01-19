@@ -15,7 +15,6 @@ func main() {
 
 	// Fetch config and start serving.
 	IP.Init()
-	IP.C.Start()
 
 	// Serve for proxy and probe.
 	web.Init()
