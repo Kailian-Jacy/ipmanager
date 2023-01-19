@@ -62,6 +62,7 @@ func (ip *IP) Release() {
 	}).Set(0)
 
 	IPAvailable = append(IPAvailable, ip.Addr)
+	tokenPool.Put(Token{ip, time.Now()})
 	Available_Metric.With(prometheus.Labels{
 		"ip":   ip.Addr,
 		"port": ip.Port,
@@ -73,6 +74,10 @@ func Init() {
 
 	// Fetch all reserved IP.
 	Construct(AllIP())
+
+	InitPool()
+	cron = New()
+	cron.Start()
 
 	// Detect available IPs crontab job.
 	Watch()
@@ -122,7 +127,6 @@ func AllIP() [][]string {
 	if err != nil {
 		panic(err)
 	}
-
 	ips := re.FindAllString(string(all), -1)
 	ipall := make([][]string, len(ips))
 	for i := range ips {
